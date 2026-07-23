@@ -1,0 +1,38 @@
+import requests
+from tg_bot import send_msg
+import os
+
+ENDPOINT = "https://api.openweathermap.org/data/2.5/forecast"
+API_KEY = os.environ.get("API_KEY")
+
+MY_LAT = os.environ.get("MY_LAT") # Your latitude
+MY_LONG = os.environ.get("MY_LONG") # Your longitude
+smile = []
+
+parameter = {
+    "lat": MY_LAT,
+    "lon": MY_LONG,
+    "appid": API_KEY,
+    "lang": "ru",
+    "units": "metric",
+    "cnt": 4
+}
+
+weather = {
+    232: "⛈️",
+    321: "🌧️",
+    531: "🌦️",
+    622: "🌨️"
+}
+
+response = requests.get(ENDPOINT, params=parameter)
+response.raise_for_status()
+data = response.json()
+will_rain = False
+for i in data["list"]:
+    if i["weather"][0]["id"] < 700:
+        will_rain = True
+        smile = [value for (key, value) in weather.items() if key >= i["weather"][0]["id"]]
+
+if will_rain:
+    send_msg(f"There will be {smile[-1]} today")
